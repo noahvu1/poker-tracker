@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Poker Ledger</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>♠</text></svg>">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;0,600;1,500;1,600&family=Space+Grotesk:wght@400;500;600;700&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="table-glow" aria-hidden="true"></div>
+
+<div class="page">
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-suit">♠</span>
+      <div class="brand-text">
+        <h1>Poker Ledger</h1>
+        <p class="brand-tagline">every hand, counted</p>
+      </div>
+    </div>
+    <div class="visit-pill" id="visitPill" title="Page visits">
+      <span class="visit-dot"></span>
+      <span id="visitCount">—</span><span class="visit-word">&nbsp;visits</span>
+    </div>
+  </header>
+
+  <section class="card onboarding-card" id="onboardingCard" hidden>
+    <div class="card-header">
+      <h2>Welcome — starting balance</h2>
+    </div>
+    <p class="onboarding-help">
+      Moving over from another tracker or a notes app? Enter the net you&rsquo;re
+      carrying in so your lifetime total stays accurate. This number is added to
+      your Lifetime Net up top, but it&rsquo;s <strong>not</strong> counted toward your
+      hourly rate, win streak, or win/loss record &mdash; those only reflect sessions
+      you log here. Leave it at 0 if you&rsquo;re starting fresh.
+    </p>
+    <div class="field-grid">
+      <label class="field">
+        <span>Starting Net ($)</span>
+        <input type="number" id="startingNetInput" step="0.01" placeholder="e.g. 922 or -150" value="0">
+      </label>
+    </div>
+    <div class="form-actions">
+      <button type="button" class="btn-primary" id="saveStartingNetBtn">Save</button>
+      <button type="button" class="btn-ghost" id="cancelStartingNetBtn" hidden>Cancel</button>
+    </div>
+  </section>
+
+  <section class="hero">
+    <div class="hero-top">
+      <span class="hero-label">Lifetime Net</span>
+      <span class="hero-amount" id="netAmount">$0.00</span>
+      <button type="button" class="starting-net-link" id="editStartingNetBtn"></button>
+    </div>
+
+    <div class="chip-trail" id="chipTrail" aria-label="Recent session results, oldest to newest"></div>
+
+    <div class="stat-row">
+      <div class="stat-chip">
+        <span class="stat-label">Win Streak</span>
+        <span class="stat-value" id="streakValue">0</span>
+      </div>
+      <div class="stat-chip">
+        <span class="stat-label">Win&nbsp;/&nbsp;Loss</span>
+        <span class="stat-value" id="winLossValue">0–0</span>
+      </div>
+      <div class="stat-chip">
+        <span class="stat-label">Hourly Rate</span>
+        <span class="stat-value" id="hourlyValue">$0.00/hr</span>
+      </div>
+      <div class="stat-chip">
+        <span class="stat-label">Sessions</span>
+        <span class="stat-value" id="sessionsValue">0</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="card form-card">
+    <div class="card-header">
+      <h2 id="formTitle">Log Today&rsquo;s Session</h2>
+      <span class="auto-date" id="autoDateLabel">&nbsp;</span>
+    </div>
+
+    <form id="sessionForm" novalidate>
+      <input type="hidden" id="sessionId">
+
+      <div class="field-grid">
+        <label class="field">
+          <span>Date</span>
+          <input type="date" id="dateInput" required>
+        </label>
+        <label class="field">
+          <span>Location <em>(optional)</em></span>
+          <input type="text" id="locationInput" placeholder="e.g. Commerce Casino" maxlength="60">
+        </label>
+        <label class="field">
+          <span>Buy-in ($)</span>
+          <input type="number" id="buyInInput" min="0" step="0.01" placeholder="0.00" required>
+        </label>
+        <label class="field">
+          <span>Cash-out ($)</span>
+          <input type="number" id="cashOutInput" min="0" step="0.01" placeholder="0.00" required>
+        </label>
+        <label class="field">
+          <span>Hours played</span>
+          <input type="number" id="hoursInput" min="0" step="1" value="0">
+        </label>
+        <label class="field">
+          <span>Minutes</span>
+          <input type="number" id="minutesInput" min="0" max="59" step="1" value="0">
+        </label>
+      </div>
+
+      <label class="field field-wide">
+        <span>Notes <em>(optional)</em></span>
+        <textarea id="notesInput" rows="2" placeholder="Game, stakes, big hands, tilt factor..." maxlength="280"></textarea>
+      </label>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-primary" id="submitBtn">Save Session</button>
+        <button type="button" class="btn-ghost" id="cancelEditBtn" hidden>Cancel Edit</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="card history-card">
+    <div class="card-header">
+      <h2>Session History</h2>
+      <span class="muted" id="historyCount">0 sessions</span>
+    </div>
+
+    <div id="historyList" class="history-list"></div>
+    <p id="emptyState" class="empty-state" hidden>No sessions logged yet — your first entry above starts the ledger.</p>
+  </section>
+
+  <footer class="page-footer">
+    <p>Saved locally in this browser. <span id="footerVisit"></span></p>
+  </footer>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
