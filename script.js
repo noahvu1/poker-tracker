@@ -11,7 +11,7 @@ const STARTING_NET_SET_KEY = 'pokerLedger.startingNetConfigured.v1';
 // Change this to something unique to you before you deploy the site publicly —
 // it's the "folder name" your visit count lives under on the free counting
 // service. See README.md for details and for swap-in alternatives.
-const VISIT_NAMESPACE = 'poker-ledger-change-me';
+const VISIT_NAMESPACE = 'nohuh-poker-ledger';
 
 /* ---------- storage: sessions ---------- */
 
@@ -366,24 +366,25 @@ editStartingNetBtn.addEventListener('click', () => openOnboarding(true));
 async function trackVisit() {
   const pillCount = document.getElementById('visitCount');
   const footerNote = document.getElementById('footerVisit');
-
-  const localVisits = (parseInt(localStorage.getItem(LOCAL_VISITS_KEY), 10) || 0) + 1;
-  localStorage.setItem(LOCAL_VISITS_KEY, String(localVisits));
+  const COUNTED_KEY = 'pokerLedger.counted.v1';
+  const alreadyCounted = localStorage.getItem(COUNTED_KEY) === 'true';
+  const endpoint = alreadyCounted
+    ? `https://api.countapi.xyz/get/${VISIT_NAMESPACE}/visits`
+    : `https://api.countapi.xyz/hit/${VISIT_NAMESPACE}/visits`;
 
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 3000);
-    const res = await fetch(`https://api.countapi.xyz/hit/${VISIT_NAMESPACE}/visits`, {
-      signal: controller.signal,
-    });
+    const res = await fetch(endpoint, { signal: controller.signal });
     clearTimeout(timeout);
     if (!res.ok) throw new Error('bad response');
     const data = await res.json();
+    if (!alreadyCounted) localStorage.setItem(COUNTED_KEY, 'true');
     pillCount.textContent = data.value.toLocaleString();
-    footerNote.textContent = 'Counting every visit from everyone who opens this page.';
+    footerNote.textContent = 'Counting unique visitors across all devices.';
   } catch (err) {
-    pillCount.textContent = localVisits.toLocaleString();
-    footerNote.textContent = 'Showing visits from this browser only — deploy the site to count everyone (see README).';
+    pillCount.textContent = '—';
+    footerNote.textContent = 'Visitor count temporarily unavailable.';
   }
 }
 
