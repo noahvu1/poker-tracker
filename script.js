@@ -369,8 +369,8 @@ async function trackVisit() {
   const COUNTED_KEY = 'pokerLedger.counted.v1';
   const alreadyCounted = localStorage.getItem(COUNTED_KEY) === 'true';
   const endpoint = alreadyCounted
-    ? `https://api.countapi.xyz/get/${VISIT_NAMESPACE}/visits`
-    : `https://api.countapi.xyz/hit/${VISIT_NAMESPACE}/visits`;
+    ? `https://api.countapi.xyz/get/${VISIT_NAMESPACE}/users`
+    : `https://api.countapi.xyz/hit/${VISIT_NAMESPACE}/users`;
 
   try {
     const controller = new AbortController();
