@@ -6,12 +6,15 @@
 const STORAGE_KEY = 'pokerLedger.sessions.v1';
 const LOCAL_VISITS_KEY = 'pokerLedger.localVisits.v1';
 const STARTING_NET_KEY = 'pokerLedger.startingNet.v1';
+const STARTING_WINS_KEY = 'pokerLedger.startingWins.v1';
+const STARTING_LOSSES_KEY = 'pokerLedger.startingLosses.v1';
+const STARTING_STREAK_KEY = 'pokerLedger.startingStreak.v1';
 const STARTING_NET_SET_KEY = 'pokerLedger.startingNetConfigured.v1';
 
 // Change this to something unique to you before you deploy the site publicly —
 // it's the "folder name" your visit count lives under on the free counting
 // service. See README.md for details and for swap-in alternatives.
-const VISIT_NAMESPACE = 'nohuh-poker-ledger';
+const VISIT_NAMESPACE = 'poker-ledger-change-me';
 
 /* ---------- storage: sessions ---------- */
 
@@ -38,8 +41,23 @@ function getStartingNet() {
   return v !== null ? (parseFloat(v) || 0) : 0;
 }
 
-function setStartingNet(value) {
-  localStorage.setItem(STARTING_NET_KEY, String(value));
+function getStartingWins() {
+  return parseInt(localStorage.getItem(STARTING_WINS_KEY), 10) || 0;
+}
+
+function getStartingLosses() {
+  return parseInt(localStorage.getItem(STARTING_LOSSES_KEY), 10) || 0;
+}
+
+function getStartingStreak() {
+  return parseInt(localStorage.getItem(STARTING_STREAK_KEY), 10) || 0;
+}
+
+function setStartingStats(net, wins, losses, streak) {
+  localStorage.setItem(STARTING_NET_KEY, String(net));
+  localStorage.setItem(STARTING_WINS_KEY, String(wins));
+  localStorage.setItem(STARTING_LOSSES_KEY, String(losses));
+  localStorage.setItem(STARTING_STREAK_KEY, String(streak));
   localStorage.setItem(STARTING_NET_SET_KEY, 'true');
 }
 
@@ -113,18 +131,27 @@ function sortedSessionsAsc() {
 function computeStats() {
   const sessionsNet = sessions.reduce((sum, s) => sum + sessionNet(s), 0);
   const startingNet = getStartingNet();
+  const startingWins = getStartingWins();
+  const startingLosses = getStartingLosses();
+  const startingStreak = getStartingStreak();
   const totalNet = startingNet + sessionsNet;
 
   const totalHours = sessions.reduce((sum, s) => sum + sessionDurationHours(s), 0);
-  const wins = sessions.filter(s => sessionNet(s) > 0).length;
-  const losses = sessions.filter(s => sessionNet(s) < 0).length;
+  const sessionWins = sessions.filter(s => sessionNet(s) > 0).length;
+  const sessionLosses = sessions.filter(s => sessionNet(s) < 0).length;
+  const wins = startingWins + sessionWins;
+  const losses = startingLosses + sessionLosses;
   const hourlyRate = totalHours > 0 ? sessionsNet / totalHours : 0;
 
+  // Count current win streak from logged sessions
   let streak = 0;
   for (const s of sortedSessionsDesc()) {
     if (sessionNet(s) > 0) streak++;
     else break;
   }
+  // If every logged session is a win (streak unbroken since we started tracking),
+  // carry over the starting streak too
+  if (streak === sessions.length) streak += startingStreak;
 
   return { totalNet, sessionsNet, startingNet, totalHours, wins, losses, hourlyRate, streak, count: sessions.length };
 }
@@ -331,12 +358,18 @@ cancelEditBtn.addEventListener('click', resetFormToNew);
 
 const onboardingCard = document.getElementById('onboardingCard');
 const startingNetInput = document.getElementById('startingNetInput');
+const startingWinsInput = document.getElementById('startingWinsInput');
+const startingLossesInput = document.getElementById('startingLossesInput');
+const startingStreakInput = document.getElementById('startingStreakInput');
 const saveStartingNetBtn = document.getElementById('saveStartingNetBtn');
 const cancelStartingNetBtn = document.getElementById('cancelStartingNetBtn');
 const editStartingNetBtn = document.getElementById('editStartingNetBtn');
 
 function openOnboarding(isEdit) {
   startingNetInput.value = getStartingNet();
+  startingWinsInput.value = getStartingWins();
+  startingLossesInput.value = getStartingLosses();
+  startingStreakInput.value = getStartingStreak();
   onboardingCard.hidden = false;
   cancelStartingNetBtn.hidden = !isEdit;
   onboardingCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -347,8 +380,11 @@ function closeOnboarding() {
 }
 
 saveStartingNetBtn.addEventListener('click', () => {
-  const value = parseFloat(startingNetInput.value) || 0;
-  setStartingNet(value);
+  const net = parseFloat(startingNetInput.value) || 0;
+  const wins = parseInt(startingWinsInput.value, 10) || 0;
+  const losses = parseInt(startingLossesInput.value, 10) || 0;
+  const streak = parseInt(startingStreakInput.value, 10) || 0;
+  setStartingStats(net, wins, losses, streak);
   closeOnboarding();
   renderAll();
 });
@@ -366,25 +402,24 @@ editStartingNetBtn.addEventListener('click', () => openOnboarding(true));
 async function trackVisit() {
   const pillCount = document.getElementById('visitCount');
   const footerNote = document.getElementById('footerVisit');
-  const COUNTED_KEY = 'pokerLedger.counted.v1';
-  const alreadyCounted = localStorage.getItem(COUNTED_KEY) === 'true';
-  const endpoint = alreadyCounted
-    ? `https://api.countapi.xyz/get/${VISIT_NAMESPACE}/users`
-    : `https://api.countapi.xyz/hit/${VISIT_NAMESPACE}/users`;
+
+  const localVisits = (parseInt(localStorage.getItem(LOCAL_VISITS_KEY), 10) || 0) + 1;
+  localStorage.setItem(LOCAL_VISITS_KEY, String(localVisits));
 
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 3000);
-    const res = await fetch(endpoint, { signal: controller.signal });
+    const res = await fetch(`https://api.countapi.xyz/hit/${VISIT_NAMESPACE}/visits`, {
+      signal: controller.signal,
+    });
     clearTimeout(timeout);
     if (!res.ok) throw new Error('bad response');
     const data = await res.json();
-    if (!alreadyCounted) localStorage.setItem(COUNTED_KEY, 'true');
     pillCount.textContent = data.value.toLocaleString();
-    footerNote.textContent = 'Counting unique visitors across all devices.';
+    footerNote.textContent = 'Counting every visit from everyone who opens this page.';
   } catch (err) {
-    pillCount.textContent = '—';
-    footerNote.textContent = 'Visitor count temporarily unavailable.';
+    pillCount.textContent = localVisits.toLocaleString();
+    footerNote.textContent = 'Showing visits from this browser only — deploy the site to count everyone (see README).';
   }
 }
 
