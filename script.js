@@ -194,7 +194,9 @@ function renderStats() {
   document.getElementById('streakValue').textContent =
     stats.streak > 0 ? `${stats.streak} \u{1F525}` : '0';
 
-  document.getElementById('winLossValue').textContent = `${stats.wins}\u2013${stats.losses}`;
+  const totalGames = stats.wins + stats.losses;
+  const winPct = totalGames > 0 ? Math.round((stats.wins / totalGames) * 100) : 0;
+  document.getElementById('winLossValue').textContent = `${stats.wins}\u2013${stats.losses} (${winPct}%)`;
 
   const hourlyEl = document.getElementById('hourlyValue');
   hourlyEl.classList.toggle('positive', stats.hourlyRate >= 0);
