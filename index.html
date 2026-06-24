@@ -152,6 +152,33 @@
     <p id="emptyState" class="empty-state" hidden>No sessions logged yet — your first entry above starts the ledger.</p>
   </section>
 
+  <section class="card contact-card">
+  <div class="card-header">
+    <h2>Get in Touch</h2>
+    <span class="muted">I'll get back to you soon</span>
+  </div>
+  <form id="contactForm" action="https://formspree.io/f/xvzjznvv" method="POST">
+    <div class="field-grid">
+      <label class="field">
+        <span>Your Name</span>
+        <input type="text" name="name" placeholder="John Smith" required>
+      </label>
+      <label class="field">
+        <span>Your Email</span>
+        <input type="email" name="email" placeholder="john@email.com" required>
+      </label>
+    </div>
+    <label class="field field-wide">
+      <span>Message</span>
+      <textarea name="message" rows="4" placeholder="Say something..." required></textarea>
+    </label>
+    <div class="form-actions">
+      <button type="submit" class="btn-primary">Send Message</button>
+      <span id="contactStatus"></span>
+    </div>
+  </form>
+  </section>
+
   <footer class="page-footer">
     <p>Saved locally in this browser. <span id="footerVisit"></span></p>
   </footer>

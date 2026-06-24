@@ -546,3 +546,8 @@ p { margin: 0; }
   .chip-dot { animation: none; opacity: 1; transform: none; }
   .btn-primary:hover { transform: none; }
 }
+
+#contactStatus {
+  font-size: 13px;
+  color: var(--win);
+}

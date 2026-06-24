@@ -432,6 +432,34 @@ resetFormToNew();
 renderAll();
 trackVisit();
 
+document.getElementById('contactForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const form = e.target;
+  const status = document.getElementById('contactStatus');
+  const btn = form.querySelector('button[type="submit"]');
+  btn.textContent = 'Sending...';
+  btn.disabled = true;
+  try {
+    const res = await fetch(form.action, {
+      method: 'POST',
+      body: new FormData(form),
+      headers: { 'Accept': 'application/json' }
+    });
+    if (res.ok) {
+      status.textContent = '✓ Message sent!';
+      form.reset();
+    } else {
+      status.style.color = 'var(--loss)';
+      status.textContent = 'Something went wrong — try again.';
+    }
+  } catch {
+    status.style.color = 'var(--loss)';
+    status.textContent = 'Something went wrong — try again.';
+  }
+  btn.textContent = 'Send Message';
+  btn.disabled = false;
+});
+
 if (!hasConfiguredStartingNet()) {
   openOnboarding(false);
 }
