@@ -551,3 +551,20 @@ p { margin: 0; }
   font-size: 13px;
   color: var(--win);
 }
+
+.social-row {
+  margin-bottom: 20px;
+}
+
+.ig-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--gold-bright);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  transition: color 150ms ease;
+}
+
+.ig-link:hover { color: var(--cream); }
