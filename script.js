@@ -427,6 +427,84 @@ async function trackVisit() {
   }
 }
 
+/* ---------- chart ---------- */
+
+let netChartInstance = null;
+
+function renderChart() {
+  const sorted = sortedSessionsAsc();
+  if (sorted.length === 0) return;
+
+  const labels = [];
+  const data = [];
+  let running = getStartingNet();
+
+  sorted.forEach(s => {
+    running += sessionNet(s);
+    labels.push(formatDateShort(s.date));
+    data.push(parseFloat(running.toFixed(2)));
+  });
+
+  const ctx = document.getElementById('netChart').getContext('2d');
+
+  if (netChartInstance) netChartInstance.destroy();
+
+  netChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Cumulative Net',
+        data,
+        borderColor: data[data.length - 1] >= 0 ? '#57D38C' : '#F26B6B',
+        backgroundColor: data[data.length - 1] >= 0
+          ? 'rgba(87,211,140,0.08)'
+          : 'rgba(242,107,107,0.08)',
+        borderWidth: 2,
+        pointRadius: 4,
+        pointBackgroundColor: data.map(v => v >= 0 ? '#57D38C' : '#F26B6B'),
+        tension: 0.3,
+        fill: true,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => formatMoney(ctx.parsed.y)
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: '#93A199', font: { family: 'Space Grotesk', size: 11 } },
+          grid: { color: 'rgba(255,255,255,0.04)' }
+        },
+        y: {
+          ticks: {
+            color: '#93A199',
+            font: { family: 'Space Grotesk', size: 11 },
+            callback: v => formatMoney(v)
+          },
+          grid: { color: 'rgba(255,255,255,0.04)' }
+        }
+      }
+    }
+  });
+}
+
+const chartToggleBtn = document.getElementById('chartToggleBtn');
+const chartContainer = document.getElementById('chartContainer');
+
+chartToggleBtn.addEventListener('click', () => {
+  const isHidden = chartContainer.hidden;
+  chartContainer.hidden = !isHidden;
+  chartToggleBtn.textContent = isHidden ? '📈 Hide Chart' : '📈 Show Chart';
+  if (isHidden) renderChart();
+});
+
 /* ---------- init ---------- */
 
 renderAutoDate();

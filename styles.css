@@ -568,3 +568,33 @@ p { margin: 0; }
 }
 
 .ig-link:hover { color: var(--cream); }
+
+.chart-toggle-row {
+  display: flex;
+  justify-content: center;
+  margin-top: 18px;
+}
+
+.chart-toggle-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.chart-toggle-btn:hover {
+  border-color: var(--gold);
+  color: var(--gold-bright);
+}
+
+.chart-container {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-soft);
+}

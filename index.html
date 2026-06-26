@@ -15,7 +15,7 @@
       href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;0,600;1,500;1,600&family=Space+Grotesk:wght@400;500;600;700&family=Caveat:wght@500;600&display=swap"
       rel="stylesheet"
     />
-
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -142,6 +142,15 @@
             <span class="stat-label">Sessions</span>
             <span class="stat-value" id="sessionsValue">0</span>
           </div>
+        </div>
+        <div class="chart-toggle-row">
+          <button type="button" class="chart-toggle-btn" id="chartToggleBtn">
+            📈 Show Chart
+          </button>
+        </div>
+
+        <div id="chartContainer" class="chart-container" hidden>
+          <canvas id="netChart"></canvas>
         </div>
       </section>
 
