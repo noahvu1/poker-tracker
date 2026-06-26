@@ -1,6 +1,7 @@
 /* ============================================
    POKER LEDGER — app logic
    All session data lives in this browser's localStorage.
+   (SHIFT OPTION F FOR FORMAT)
    ============================================ */
 
 const STORAGE_KEY = 'pokerLedger.sessions.v1';
@@ -232,7 +233,8 @@ function renderHistory() {
   const countLabel = document.getElementById('historyCount');
   const sorted = sortedSessionsDesc();
 
-  countLabel.textContent = `${sorted.length} session${sorted.length === 1 ? '' : 's'}`;
+  const totalHours = sessions.reduce((sum, s) => sum + sessionDurationHours(s), 0);
+  countLabel.textContent = `${sorted.length} session${sorted.length === 1 ? '' : 's'} · ${totalHours.toFixed(1)} hrs`;
   list.innerHTML = '';
 
   if (sorted.length === 0) {
